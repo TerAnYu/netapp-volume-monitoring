@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2020-09-16T16:46:45Z</date>
+    <groups>
+        <group>
+            <name>Templates Custom</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Tamplate App NetApp NFS Volumes</template>
+            <name>Tamplate App NetApp NFS Volumes</name>
+            <groups>
+                <group>
+                    <name>Templates Custom</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Zabbix raw items</name>
+                </application>
+            </applications>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>Discovery NetApp Volumes</name>
+                    <type>EXTERNAL</type>
+                    <key>netapp_volume_discovery.sh</key>
+                    <delay>5m</delay>
+                    <lifetime>7d</lifetime>
+                    <description>Discovery  NetApp Volumes.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Inode free on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>inode_free[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>\/vol\/\w+\/.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)
+\2</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Inode total on {#VOLUME_NAME}</name>
+                            <type>CALCULATED</type>
+                            <key>inode_total[{#VOLUME_NAME}]</key>
+                            <history>14d</history>
+                            <params>last(inode_free[{#VOLUME_NAME}])+last(inode_used[{#VOLUME_NAME}])</params>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Inode used on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>inode_used[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>\/vol\/\w+\/.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)
+\1</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Inode used percentage on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>inode_used_percentage[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>%</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>\/vol\/\w+\/.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)
+\3</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Average latency for an operation in microseconds on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>latency_us[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>us</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>.DOMCLIC_SVM.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)
+\7</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Logical available on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>logical_available[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>B</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(?&lt;=Logical Available:\s)\d+
+\0</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Logical size on {#VOLUME_NAME}</name>
+                            <type>CALCULATED</type>
+                            <key>logical_size[{#VOLUME_NAME}]</key>
+                            <history>14d</history>
+                            <units>B</units>
+                            <params>last(logical_available[{#VOLUME_NAME}])+last(total_used[{#VOLUME_NAME}])</params>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Logical used percent on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>logical_used_percent[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>%</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(?&lt;=Logical Used Percent:\s)\d+
+\0</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Logical used size on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>logical_used_size[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>B</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(?&lt;=Logical Used Size:\s)\d+
+\0</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Other operations per second on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>other_ops[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>ops</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>.DOMCLIC_SVM.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)
+\4</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Physical used percentage on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>physical_used_percentage[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>%</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(?&lt;=Physical Used Percentage:\s)\d+
+\0</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Read throughput in bytes per second on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>read_bps[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>Bps</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>.DOMCLIC_SVM.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)
+\5</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Read operations per second on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>read_ops[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>ops</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>.DOMCLIC_SVM.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)
+\2</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Get Volume: {#VOLUME_NAME} info</name>
+                            <type>SSH</type>
+                            <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            <history>1d</history>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <params>set -unit B; df -i -volume {#VOLUME_NAME}; volume show-space {#VOLUME_NAME}; statistics volume show -volume {#VOLUME_NAME}</params>
+                            <username>username</username>
+                            <password>password</password>
+                            <applications>
+                                <application>
+                                    <name>Zabbix raw items</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Total number of operations per second on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>total_ops[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>ops</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>.DOMCLIC_SVM.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)
+\1</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Total physical used size on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>total_physical_used_size[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>B</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(?&lt;=Total Physical Used Size:\s)\d+
+\0</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Total used on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>total_used[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>B</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(?&lt;=Total Used:\s)\d+
+\0</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Total used percent on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>total_used_percent[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>%</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(?&lt;=Total Used Percent:\s)\d+
+\0</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Write throughput in bytes per second on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>write_bps[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>Bps</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>.DOMCLIC_SVM.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)
+\6</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Write operations per second on {#VOLUME_NAME}</name>
+                            <type>DEPENDENT</type>
+                            <key>write_ops[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>14d</history>
+                            <units>ops</units>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>.DOMCLIC_SVM.*
+\0</params>
+                                </step>
+                                <step>
+                                    <type>REGEX</type>
+                                    <params>(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)
+\3</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>ssh.run[{#VOLUME_NAME},{HOST.CONN}]</key>
+                            </master_item>
+                        </item_prototype>
+                    </item_prototypes>
+                    <trigger_prototypes>
+                        <trigger_prototype>
+                            <expression>({Tamplate App NetApp NFS Volumes:logical_available[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:logical_size[{#VOLUME_NAME}].last()})&lt;=1</expression>
+                            <name>Free disk space less than 1% on {#VOLUME_NAME}</name>
+                            <priority>DISASTER</priority>
+                            <description>Free: {ITEM.VALUE1}</description>
+                            <tags>
+                                <tag>
+                                    <tag>volume_name</tag>
+                                    <value>#{#VOLUME_NAME}</value>
+                                </tag>
+                            </tags>
+                        </trigger_prototype>
+                        <trigger_prototype>
+                            <expression>({Tamplate App NetApp NFS Volumes:logical_available[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:logical_size[{#VOLUME_NAME}].last()})&lt;=5</expression>
+                            <name>Free disk space less than 5% on {#VOLUME_NAME}</name>
+                            <priority>HIGH</priority>
+                            <description>Free: {ITEM.VALUE1}</description>
+                            <dependencies>
+                                <dependency>
+                                    <name>Free disk space less than 1% on {#VOLUME_NAME}</name>
+                                    <expression>({Tamplate App NetApp NFS Volumes:logical_available[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:logical_size[{#VOLUME_NAME}].last()})&lt;=1</expression>
+                                </dependency>
+                            </dependencies>
+                            <tags>
+                                <tag>
+                                    <tag>volume_name</tag>
+                                    <value>#{#VOLUME_NAME}</value>
+                                </tag>
+                            </tags>
+                        </trigger_prototype>
+                        <trigger_prototype>
+                            <expression>({Tamplate App NetApp NFS Volumes:logical_available[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:logical_size[{#VOLUME_NAME}].last()})&lt;=10</expression>
+                            <name>Free disk space less than 10% on {#VOLUME_NAME}</name>
+                            <priority>AVERAGE</priority>
+                            <description>Free: {ITEM.VALUE1}</description>
+                            <dependencies>
+                                <dependency>
+                                    <name>Free disk space less than 5% on {#VOLUME_NAME}</name>
+                                    <expression>({Tamplate App NetApp NFS Volumes:logical_available[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:logical_size[{#VOLUME_NAME}].last()})&lt;=5</expression>
+                                </dependency>
+                            </dependencies>
+                            <tags>
+                                <tag>
+                                    <tag>volume_name</tag>
+                                    <value>#{#VOLUME_NAME}</value>
+                                </tag>
+                            </tags>
+                        </trigger_prototype>
+                        <trigger_prototype>
+                            <expression>({Tamplate App NetApp NFS Volumes:inode_free[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:inode_total[{#VOLUME_NAME}].last()})&lt;=1</expression>
+                            <name>Free inodes less than 1% on {#VOLUME_NAME}</name>
+                            <priority>DISASTER</priority>
+                            <description>Free: {ITEM.VALUE1}</description>
+                            <tags>
+                                <tag>
+                                    <tag>volume_name</tag>
+                                    <value>#{#VOLUME_NAME}</value>
+                                </tag>
+                            </tags>
+                        </trigger_prototype>
+                        <trigger_prototype>
+                            <expression>({Tamplate App NetApp NFS Volumes:inode_free[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:inode_total[{#VOLUME_NAME}].last()})&lt;=5</expression>
+                            <name>Free inodes less than 5% on {#VOLUME_NAME}</name>
+                            <priority>HIGH</priority>
+                            <description>Free: {ITEM.VALUE1}</description>
+                            <dependencies>
+                                <dependency>
+                                    <name>Free inodes less than 1% on {#VOLUME_NAME}</name>
+                                    <expression>({Tamplate App NetApp NFS Volumes:inode_free[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:inode_total[{#VOLUME_NAME}].last()})&lt;=1</expression>
+                                </dependency>
+                            </dependencies>
+                            <tags>
+                                <tag>
+                                    <tag>volume_name</tag>
+                                    <value>#{#VOLUME_NAME}</value>
+                                </tag>
+                            </tags>
+                        </trigger_prototype>
+                        <trigger_prototype>
+                            <expression>({Tamplate App NetApp NFS Volumes:inode_free[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:inode_total[{#VOLUME_NAME}].last()})&lt;=10</expression>
+                            <name>Free inodes less than 10% on {#VOLUME_NAME}</name>
+                            <priority>AVERAGE</priority>
+                            <description>Free: {ITEM.VALUE1}</description>
+                            <dependencies>
+                                <dependency>
+                                    <name>Free inodes less than 5% on {#VOLUME_NAME}</name>
+                                    <expression>({Tamplate App NetApp NFS Volumes:inode_free[{#VOLUME_NAME}].last()}*100/ {Tamplate App NetApp NFS Volumes:inode_total[{#VOLUME_NAME}].last()})&lt;=5</expression>
+                                </dependency>
+                            </dependencies>
+                            <tags>
+                                <tag>
+                                    <tag>volume_name</tag>
+                                    <value>#{#VOLUME_NAME}</value>
+                                </tag>
+                            </tags>
+                        </trigger_prototype>
+                    </trigger_prototypes>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#VOLUME_NAME}</lld_macro>
+                            <path>$.volume_name</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                </discovery_rule>
+            </discovery_rules>
+        </template>
+    </templates>
+</zabbix_export>
