@@ -1,0 +1,1049 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2021-02-16T08:20:56Z</date>
+    <groups>
+        <group>
+            <name>Templates</name>
+        </group>
+        <group>
+            <name>Templates/Applications</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Template App NetApp ONTAP by HTTP-agent</template>
+            <name>Template App NetApp ONTAP by HTTP-agent</name>
+            <description>ONTAP REST API 9.6+&#13;
+https://library.netapp.com/ecmdocs/ECMLP2856304/html/index.html#/</description>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+                <group>
+                    <name>Templates/Applications</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>NetApp cluster</name>
+                </application>
+                <application>
+                    <name>NetApp volumes</name>
+                </application>
+                <application>
+                    <name>Zabbix raw items</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>NetApp: Cluster name</name>
+                    <type>DEPENDENT</type>
+                    <key>netapp.cluster.name</key>
+                    <delay>0</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>NetApp cluster</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <params>$.name</params>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>netapp.get.cluster.info</key>
+                    </master_item>
+                </item>
+                <item>
+                    <name>NetApp: Cluster full version</name>
+                    <type>DEPENDENT</type>
+                    <key>netapp.cluster.version.full</key>
+                    <delay>0</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>NetApp cluster</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <params>$.version.full</params>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>netapp.get.cluster.info</key>
+                    </master_item>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <recovery_mode>NONE</recovery_mode>
+                            <name>NetApp cluster version was changed</name>
+                            <priority>WARNING</priority>
+                            <description>Current version: {ITEM.VALUE}&#13;
+Only manual closing of the trigger</description>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>NetApp: Get cluster information</name>
+                    <type>HTTP_AGENT</type>
+                    <key>netapp.get.cluster.info</key>
+                    <delay>1h</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <authtype>BASIC</authtype>
+                    <username>{$ONTAP.USERNAME}</username>
+                    <password>{$ONTAP.PASSWORD}</password>
+                    <applications>
+                        <application>
+                            <name>Zabbix raw items</name>
+                        </application>
+                    </applications>
+                    <timeout>15s</timeout>
+                    <url>{$ONTAP.SCHEME}://{HOST.CONN}/api/cluster</url>
+                </item>
+                <item>
+                    <name>NetApp: Get volumes</name>
+                    <type>HTTP_AGENT</type>
+                    <key>netapp.get.volumes</key>
+                    <history>1h</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <authtype>BASIC</authtype>
+                    <username>{$ONTAP.USERNAME}</username>
+                    <password>{$ONTAP.PASSWORD}</password>
+                    <applications>
+                        <application>
+                            <name>Zabbix raw items</name>
+                        </application>
+                    </applications>
+                    <timeout>15s</timeout>
+                    <url>{$ONTAP.SCHEME}://{HOST.CONN}/api/storage/volumes</url>
+                </item>
+                <item>
+                    <name>NetApp: Volumes number</name>
+                    <type>DEPENDENT</type>
+                    <key>netapp.storage.volumes.num_records</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <applications>
+                        <application>
+                            <name>NetApp volumes</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <params>$.num_records</params>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>netapp.get.volumes</key>
+                    </master_item>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>NetApp: Volumes discovery</name>
+                    <type>DEPENDENT</type>
+                    <key>netapp.storage.volumes.discovery</key>
+                    <delay>0</delay>
+                    <lifetime>7d</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>NetApp: Comment on volume</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.comment[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>1d</history>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.comment</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Inode available on volume</name>
+                            <type>CALCULATED</type>
+                            <key>netapp.get.volume.files.available[{#VOLUME_NAME}]</key>
+                            <history>7d</history>
+                            <params>last(netapp.get.volume.files.maximum[{#VOLUME_NAME}])-last(netapp.get.volume.files.used[{#VOLUME_NAME}])</params>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Inode maximum on volume</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.files.maximum[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <description>The maximum number of files (inodes) for user-visible data allowed on the volume. This value can be increased or decreased. Increasing the maximum number of files does not immediately cause additional disk space to be used to track files. Instead, as more files are created on the volume, the system dynamically increases the number of disk blocks that are used to track files. The space assigned to track files is never freed, and this value cannot be decreased below the current number of files that can be tracked within the assigned space for the volume. Valid in PATCH.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.files.maximum</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume.inode[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Inode used in percentage on volume</name>
+                            <type>CALCULATED</type>
+                            <key>netapp.get.volume.files.used.percentage[{#VOLUME_NAME}]</key>
+                            <history>7d</history>
+                            <units>%</units>
+                            <params>(last(netapp.get.volume.files.used[{#VOLUME_NAME}])*100)/last(netapp.get.volume.files.maximum[{#VOLUME_NAME}])</params>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=99</expression>
+                                    <name>Free inodes less than 1% on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>DISASTER</priority>
+                                    <description>Used: {ITEM.VALUE}</description>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=95</expression>
+                                    <name>Free inodes less than 5% on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>HIGH</priority>
+                                    <description>Used: {ITEM.VALUE}</description>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>Free inodes less than 1% on {#VOLUME_NAME}</name>
+                                            <expression>{Template App NetApp ONTAP by HTTP-agent:netapp.get.volume.files.used.percentage[{#VOLUME_NAME}].last()}&gt;=99</expression>
+                                        </dependency>
+                                    </dependencies>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=90</expression>
+                                    <name>Free inodes less than 10% on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>AVERAGE</priority>
+                                    <description>Used: {ITEM.VALUE}</description>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>Free inodes less than 1% on {#VOLUME_NAME}</name>
+                                            <expression>{Template App NetApp ONTAP by HTTP-agent:netapp.get.volume.files.used.percentage[{#VOLUME_NAME}].last()}&gt;=99</expression>
+                                        </dependency>
+                                        <dependency>
+                                            <name>Free inodes less than 5% on {#VOLUME_NAME}</name>
+                                            <expression>{Template App NetApp ONTAP by HTTP-agent:netapp.get.volume.files.used.percentage[{#VOLUME_NAME}].last()}&gt;=95</expression>
+                                        </dependency>
+                                    </dependencies>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Inode used on volume</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.files.used[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <description>Number of files (inodes) used for user-visible data permitted on the volume. This field is valid only when the volume is online.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.files.used</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume.inode[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Get volume {#VOLUME_NAME} inode information</name>
+                            <type>HTTP_AGENT</type>
+                            <key>netapp.get.volume.inode[{#VOLUME_NAME}]</key>
+                            <history>1h</history>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <authtype>BASIC</authtype>
+                            <username>{$ONTAP.USERNAME}</username>
+                            <password>{$ONTAP.PASSWORD}</password>
+                            <applications>
+                                <application>
+                                    <name>Zabbix raw items</name>
+                                </application>
+                            </applications>
+                            <timeout>15s</timeout>
+                            <url>{$ONTAP.SCHEME}://{HOST.CONN}/api/storage/volumes/{#VOLUME_UUID}?fields=files</url>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume iops other</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.iops.other[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>iops</units>
+                            <description>Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.iops.other</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume iops read</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.iops.read[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>iops</units>
+                            <description>Performance metric for read I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.iops.read</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume iops total</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.iops.total[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>iops</units>
+                            <description>Performance metric aggregated over all types of I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.iops.total</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume iops write</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.iops.write[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>iops</units>
+                            <description>Peformance metric for write I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.iops.write</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume latency other in ms</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.latency.other[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>us</units>
+                            <description>Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.latency.other</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume latency read in ms</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.latency.read[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>us</units>
+                            <description>Performance metric for read I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.latency.read</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume latency total in ms</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.latency.total[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>us</units>
+                            <description>Performance metric aggregated over all types of I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.latency.total</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume latency write in ms</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.latency.write[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>us</units>
+                            <description>Peformance metric for write I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.latency.write</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume metrics status</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.status[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>1d</history>
+                            <trends>0</trends>
+                            <value_type>CHAR</value_type>
+                            <description>Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, “ok” on success, or “error” on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with &quot;backfilled_data&quot;. “Inconsistent_delta_time” is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. “Negative_delta” is returned when an expected monotonically increasing value has decreased in value. “Inconsistent_old_data” is returned when one or more nodes does not have the latest data.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.status</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{str(ok)}=0</expression>
+                                    <name>Volume metrics status is not OK on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>INFO</priority>
+                                    <description>Metric status: {ITEM.VALUE}</description>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume throughput other</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.throughput.other[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>Bps</units>
+                            <description>Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.throughput.other</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume throughput read</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.throughput.read[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>Bps</units>
+                            <description>Performance metric for read I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.throughput.read</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume throughput total</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.throughput.total[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>Bps</units>
+                            <description>Performance metric aggregated over all types of I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.throughput.total</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume throughput write</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.metric.throughput.write[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>Bps</units>
+                            <description>Peformance metric for write I/O operations.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.metric.throughput.write</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume space available</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.space.available[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>B</units>
+                            <description>The available space, in bytes.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.space.available</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume space size</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.space.size[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>B</units>
+                            <description>Total provisioned size. The default size is equal to the minimum size of 20MB, in bytes.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.space.size</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume space used in percentage</name>
+                            <type>CALCULATED</type>
+                            <key>netapp.get.volume.space.used.percentage[{#VOLUME_NAME}]</key>
+                            <history>7d</history>
+                            <units>%</units>
+                            <params>(last(netapp.get.volume.space.used[{#VOLUME_NAME}])*100)/last(netapp.get.volume.space.size[{#VOLUME_NAME}])</params>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=99</expression>
+                                    <name>Free disk space less than 1% on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>DISASTER</priority>
+                                    <description>Used: {ITEM.VALUE}</description>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=95</expression>
+                                    <name>Free disk space less than 5% on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>HIGH</priority>
+                                    <description>Used: {ITEM.VALUE}</description>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>Free disk space less than 1% on {#VOLUME_NAME}</name>
+                                            <expression>{Template App NetApp ONTAP by HTTP-agent:netapp.get.volume.space.used.percentage[{#VOLUME_NAME}].last()}&gt;=99</expression>
+                                        </dependency>
+                                    </dependencies>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=90</expression>
+                                    <name>Free disk space less than 10% on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>AVERAGE</priority>
+                                    <description>Used: {ITEM.VALUE}</description>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>Free disk space less than 1% on {#VOLUME_NAME}</name>
+                                            <expression>{Template App NetApp ONTAP by HTTP-agent:netapp.get.volume.space.used.percentage[{#VOLUME_NAME}].last()}&gt;=99</expression>
+                                        </dependency>
+                                        <dependency>
+                                            <name>Free disk space less than 5% on {#VOLUME_NAME}</name>
+                                            <expression>{Template App NetApp ONTAP by HTTP-agent:netapp.get.volume.space.used.percentage[{#VOLUME_NAME}].last()}&gt;=95</expression>
+                                        </dependency>
+                                    </dependencies>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume space used</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.space.used[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <units>B</units>
+                            <description>The virtual space used (includes volume reserves) before storage efficiency, in bytes.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.space.used</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Volume state</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.state[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>1d</history>
+                            <trends>0</trends>
+                            <value_type>CHAR</value_type>
+                            <description>Volume state. A volume can only be brought online if it is offline. The ‘mixed’ state applies to FlexGroup volumes only and cannot be specified as a target state. An ‘error’ state implies that the volume is not in a state to serve data.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.state</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{str(online)}=0</expression>
+                                    <name>Volume state is not ONLINE on {#VOLUME_NAME}</name>
+                                    <url>https://grafana.example.ru/link_to_dashboard</url>
+                                    <priority>INFO</priority>
+                                    <description>Volume state: {ITEM.VALUE}</description>
+                                    <tags>
+                                        <tag>
+                                            <tag>volume_name</tag>
+                                            <value>#{#VOLUME_NAME}</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Style of volume</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.style[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>1d</history>
+                            <trends>0</trends>
+                            <value_type>CHAR</value_type>
+                            <description>The style of the volume. If “style” is not specified, the volume type is determined based on the specified aggregates. Specifying a single aggregate, without “constituents_per_aggregate” creates a flexible volume. Specifying multiple aggregates, or a single aggregate with “constituents_per_aggregate” creates a FlexGroup. If “style” is specified, a volume of that type is created. That is, if style is &quot;flexvol&quot;, a single aggregate must be specified. If style is &quot;flexgroup&quot;, the system either uses the specified aggregates, or automatically provisions if no aggregates are specified.&#13;
+flexvol ‐ flexible volumes and FlexClone volumes&#13;
+flexgroup ‐ FlexGroups.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.style</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Type of volume</name>
+                            <type>DEPENDENT</type>
+                            <key>netapp.get.volume.type[{#VOLUME_NAME}]</key>
+                            <delay>0</delay>
+                            <history>1d</history>
+                            <trends>0</trends>
+                            <value_type>CHAR</value_type>
+                            <description>Type of the volume.&#13;
+rw ‐ read-write volume.&#13;
+dp ‐ data-protection volume.&#13;
+ls ‐ load-sharing dp volume. Valid in GET.</description>
+                            <applications>
+                                <application>
+                                    <name>NetApp volumes</name>
+                                </application>
+                            </applications>
+                            <application_prototypes>
+                                <application_prototype>
+                                    <name>{#VOLUME_NAME}</name>
+                                </application_prototype>
+                            </application_prototypes>
+                            <preprocessing>
+                                <step>
+                                    <type>JSONPATH</type>
+                                    <params>$.type</params>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            </master_item>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>NetApp: Get volume {#VOLUME_NAME} information</name>
+                            <type>HTTP_AGENT</type>
+                            <key>netapp.get.volume[{#VOLUME_NAME}]</key>
+                            <history>1h</history>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <authtype>BASIC</authtype>
+                            <username>{$ONTAP.USERNAME}</username>
+                            <password>{$ONTAP.PASSWORD}</password>
+                            <applications>
+                                <application>
+                                    <name>Zabbix raw items</name>
+                                </application>
+                            </applications>
+                            <timeout>15s</timeout>
+                            <url>{$ONTAP.SCHEME}://{HOST.CONN}/api/storage/volumes/{#VOLUME_UUID}</url>
+                        </item_prototype>
+                    </item_prototypes>
+                    <master_item>
+                        <key>netapp.get.volumes</key>
+                    </master_item>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#VOLUME_NAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#VOLUME_UUID}</lld_macro>
+                            <path>$.uuid</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <params>$.records</params>
+                        </step>
+                    </preprocessing>
+                </discovery_rule>
+            </discovery_rules>
+            <tags>
+                <tag>
+                    <tag>template</tag>
+                    <value>#netapp</value>
+                </tag>
+            </tags>
+        </template>
+    </templates>
+</zabbix_export>
